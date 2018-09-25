@@ -35,7 +35,11 @@ typedef signed char Word8;
 typedef short Word16;
 typedef int Word32;
 typedef int Flag;
-
+#else
+typedef signed char Word8;
+typedef short Word16;
+typedef int Word32;
+typedef int Flag;
 #endif
 
 /* define 16 bit unsigned types for G.722.1 */
