@@ -27,6 +27,7 @@
 *************************************************************************************/
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
 #include "defs.h"
 
 /************************************************************************************
@@ -181,8 +182,8 @@ void main(argc, argv)
 		nsamp1=fread(input,2,framesize,fpin);
 		  }
   
-	  close(fpin);
-	  close(fp_bitstream);
+	  fclose(fpin);
+	  fclose(fp_bitstream);
 
 }
 

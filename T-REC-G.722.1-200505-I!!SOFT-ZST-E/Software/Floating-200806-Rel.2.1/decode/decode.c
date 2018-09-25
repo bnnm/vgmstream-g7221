@@ -20,6 +20,7 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
 #include "defs.h"
 
 static int one = 0x0081;
@@ -193,9 +194,9 @@ void main(argc, argv)
     
   }
 
-    close(fpout);
+    fclose(fpout);
  
-    close(fp_bitstream);
+    fclose(fp_bitstream);
 
 }
 
