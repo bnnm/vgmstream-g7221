@@ -105,7 +105,7 @@ typedef struct
     Word32 mult;
     Word32 L_mult;
     Word32 negate;
-    Word32 round;
+    Word32 round16;
     Word32 L_mac;
     Word32 L_msu;
     Word32 L_macNs;
