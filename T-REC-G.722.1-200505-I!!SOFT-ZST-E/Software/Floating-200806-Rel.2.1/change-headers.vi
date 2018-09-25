@@ -1,0 +1,4 @@
+:%s/ITU-T Wideband Coder Candidate (G.WB) Source Code/G.722.1 Annex B - G.722.1 Floating point implementation/
+o**   > Software Release 2.1 (2008-06)
+:w!
+:q
