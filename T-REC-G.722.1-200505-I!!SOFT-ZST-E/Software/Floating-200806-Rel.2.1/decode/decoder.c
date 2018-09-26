@@ -126,7 +126,7 @@ void decoder(bitobj,randobj,number_of_regions,
       for (i=0; i<num_rate_control_bits; i++) {
           get_next_bit(bitobj);
           rate_control <<= 1;
-          rate_control |= bitobj->next_bit;
+          rate_control += bitobj->next_bit;
       }
     }
     bitobj->number_of_bits_left -= num_rate_control_bits;
@@ -425,8 +425,10 @@ void decode_vector_quantized_mlt_indices(bitobj,randobj,number_of_regions,
       noise_scale_factor = 22.0f;
   }
   else {
-      scale_factor = 33.0f;
-      noise_scale_factor = 33.0f;
+      /* Original float ref.decoder didn't do 14000, so this is approximate.
+       * 33.0f is too quiet vs int ref.decoder, while 36.0f is slightly louder. */
+      scale_factor = 35.8f;
+      noise_scale_factor = 35.8f;
   }
 
 
