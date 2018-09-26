@@ -44,24 +44,11 @@ extern int table_of_decoder_tables[NUM_CATEGORIES-1];
 
 /* decalaration of local functions and variables */
 void rate_adjust_categories(int, int [], int []);
-void decode_envelope(int, float[], int[]);
-void decode_vector_quantized_mlt_indices(int, float [], int [], float []);
+void decode_envelope(Bit_Obj*, int, float[], int[]);
+void decode_vector_quantized_mlt_indices(Bit_Obj*, Rand_Obj*, int, float [], int [], float []);
 
-static int number_of_bits_left;
-static int next_bit;
-static int code_word;
-static int code_bit_count;
-static short int *code_word_ptr;
 
 #define NOISE_SCALE_FACTOR 22.0F
-
-#define GET_NEXT_BIT \
-if (code_bit_count == 0) { \
-  code_word = *code_word_ptr++; \
-  code_bit_count = 16; \
-} \
-code_bit_count--; \
-next_bit = (code_word >> code_bit_count) & 1;
 
 /***************************************************************************
  Procedure/Function:  decoder
@@ -89,14 +76,14 @@ next_bit = (code_word >> code_bit_count) & 1;
 				
 ***************************************************************************/
 
-void decoder(number_of_regions,
+void decoder(bitobj,randobj,number_of_regions,
 	     number_of_bits_per_frame,
-	     bitstream,
 	     decoder_mlt_coefs,
 	     frame_error_flag)
+     Bit_Obj *bitobj;
+     Rand_Obj *randobj;
      int number_of_regions;
      int number_of_bits_per_frame;
-     short int bitstream[];
      float decoder_mlt_coefs[MAX_DCT_SIZE];
      int frame_error_flag;
 
@@ -122,10 +109,6 @@ void decoder(number_of_regions,
 
   if (frame_error_flag == 0) {
 
-    code_word_ptr = bitstream;
-    code_bit_count = 0;
-
-
     if (number_of_regions <= 14) {
       num_rate_control_bits = 4;
       num_rate_control_possibilities = 16;
@@ -133,9 +116,7 @@ void decoder(number_of_regions,
 
     }
 
-    number_of_bits_left = number_of_bits_per_frame;
-
-    decode_envelope(number_of_regions,
+    decode_envelope(bitobj,number_of_regions,
 		    decoder_region_standard_deviation,
 		    absolute_region_power_index);
 
@@ -143,15 +124,15 @@ void decoder(number_of_regions,
       int i;
       rate_control = 0;
       for (i=0; i<num_rate_control_bits; i++) {
-	GET_NEXT_BIT;
-	rate_control <<= 1;
-	rate_control += next_bit;
+          get_next_bit(bitobj);
+          rate_control <<= 1;
+          rate_control |= bitobj->next_bit;
       }
     }
-    number_of_bits_left -= num_rate_control_bits;
+    bitobj->number_of_bits_left -= num_rate_control_bits;
 
     categorize(number_of_regions,
-	       number_of_bits_left,
+           bitobj->number_of_bits_left,
 	       absolute_region_power_index,
 	       decoder_power_categories,
 	       decoder_category_balances);
@@ -160,25 +141,25 @@ void decoder(number_of_regions,
 			   decoder_power_categories,
 			   decoder_category_balances);
 
-    decode_vector_quantized_mlt_indices(number_of_regions,
+    decode_vector_quantized_mlt_indices(bitobj,randobj,number_of_regions,
 					decoder_region_standard_deviation,
 					decoder_power_categories,
 					decoder_mlt_coefs);
 
 /* Test for bit stream errors. */
 
-    if (number_of_bits_left > 0) {
+    if (bitobj->number_of_bits_left > 0) {
       {
 	int i;
-	for (i=0; i<number_of_bits_left; i++) {
-	  GET_NEXT_BIT;
-	  if (next_bit == 0) frame_error_flag = 1;
+	for (i=0; i<bitobj->number_of_bits_left; i++) {
+	  get_next_bit(bitobj);
+	  if (bitobj->next_bit == 0) frame_error_flag = 1;
 	}	
       }
     }
     else {
       if (rate_control < num_rate_control_possibilities-1) {
-	if (number_of_bits_left < 0)
+	if (bitobj->number_of_bits_left < 0)
 	  frame_error_flag |= 2;
       }
     }
@@ -255,9 +236,10 @@ void decoder(number_of_regions,
  				
 ***************************************************************************/
 
-void decode_envelope(number_of_regions,
+void decode_envelope(bitobj,number_of_regions,
 		     decoder_region_standard_deviation,
 		     absolute_region_power_index)
+     Bit_Obj *bitobj;
      int number_of_regions;
      float decoder_region_standard_deviation[MAX_NUM_REGIONS];
      int absolute_region_power_index[MAX_NUM_REGIONS];
@@ -273,26 +255,26 @@ void decode_envelope(number_of_regions,
   
   index = 0;
   for (i=0; i<5; i++) {
-    GET_NEXT_BIT;
+    get_next_bit(bitobj);
     index <<= 1;
-    index += next_bit;
+    index += bitobj->next_bit;
   }
 
 /* ESF_ADJUSTMENT_TO_RMS_INDEX compensates for the current (9/30/96)
    IMLT being scaled to high by the ninth power of sqrt(2). */
   
   differential_region_power_index[0] = index-ESF_ADJUSTMENT_TO_RMS_INDEX;
-  number_of_bits_left -= 5;
+  bitobj->number_of_bits_left -= 5;
 
   for (region=1; region<number_of_regions; region++) {
     index = 0;
     do {
-      GET_NEXT_BIT;
-      if (next_bit == 0)
+        get_next_bit(bitobj);
+      if (bitobj->next_bit == 0)
 	index = differential_region_power_decoder_tree[region][index][0];
       else
 	index = differential_region_power_decoder_tree[region][index][1];
-      number_of_bits_left--;
+      bitobj->number_of_bits_left--;
     } while (index > 0);
     differential_region_power_index[region] = -index;
   }
@@ -359,14 +341,6 @@ void rate_adjust_categories(rate_control,
 /* ************************************************************************************ */
 /* ************************************************************************************ */
 
-#define get_rand() \
-random_word = b0+b3; \
-if ((random_word & 32768) != 0) random_word++; \
-b3 = b2; \
-b2 = b1; \
-b1 = b0; \
-b0 = random_word;
-
 
 /***************************************************************************
  Procedure/Function:   decode_vector_quantized_mlt_indices
@@ -392,11 +366,12 @@ b0 = random_word;
 				
 ***************************************************************************/
 
-void decode_vector_quantized_mlt_indices(number_of_regions,
+void decode_vector_quantized_mlt_indices(bitobj,randobj,number_of_regions,
 					 decoder_region_standard_deviation,
 					 decoder_power_categories,
 					 decoder_mlt_coefs)
-
+     Bit_Obj *bitobj;
+     Rand_Obj *randobj;
      int number_of_regions;
      float decoder_region_standard_deviation[MAX_NUM_REGIONS];
      int decoder_power_categories[MAX_NUM_REGIONS];
@@ -437,17 +412,7 @@ void decode_vector_quantized_mlt_indices(number_of_regions,
   int ran_out_of_bits_flag;
   int *decoder_table_ptr;
 
-  static int here_before = 0;
-  static int b0,b1,b2,b3;
   int random_word;
-
-  if (here_before == 0) {
-    here_before = 1;
-    b0 = 1;
-    b1 = 1;
-    b2 = 1;
-    b3 = 1;
-  }         
 
   ran_out_of_bits_flag = 0;
   for (region=0; region<number_of_regions; region++) {
@@ -465,34 +430,34 @@ void decode_vector_quantized_mlt_indices(number_of_regions,
 
 	  index = 0;
 	  do {
-	    if (number_of_bits_left <= 0) {
+	    if (bitobj->number_of_bits_left <= 0) {
 	      ran_out_of_bits_flag = 1;
 
 	      break;
 	    }
 
-	    GET_NEXT_BIT;
-	    if (next_bit == 0)
+	    get_next_bit(bitobj);
+	    if (bitobj->next_bit == 0)
 	      index = *(decoder_table_ptr + 2*index);
 	    else
 	      index = *(decoder_table_ptr + 2*index + 1);
 
 
-	    number_of_bits_left--;
+	    bitobj->number_of_bits_left--;
 	  } while (index > 0);
 	  if (ran_out_of_bits_flag == 1)
 	    break;
 	  index = -index;
 	  num_sign_bits = index_to_array(index,k,category);
 
-	  if (number_of_bits_left >= num_sign_bits) {
+	  if (bitobj->number_of_bits_left >= num_sign_bits) {
 	    if (num_sign_bits != 0) {
 	      signs_index = 0;
 	      for (j=0; j<num_sign_bits; j++) {
-		GET_NEXT_BIT;
+	    get_next_bit(bitobj);
        		signs_index <<= 1;
-		signs_index += next_bit;
-		number_of_bits_left--;
+		signs_index += bitobj->next_bit;
+		bitobj->number_of_bits_left--;
 	      }
 	      bit = 1 << (num_sign_bits-1);
 	    }
@@ -556,7 +521,7 @@ void decode_vector_quantized_mlt_indices(number_of_regions,
 	noifillneg = -noifillpos;
 
 /* This assumes region_size = 20 */
-	get_rand();
+	random_word = get_rand(randobj);
 	for (j=0; j<10; j++) {
 	  if (*decoder_mlt_ptr == 0) {
 	    temp1 = noifillpos;
@@ -566,7 +531,7 @@ void decode_vector_quantized_mlt_indices(number_of_regions,
 	  }
 	  decoder_mlt_ptr++;
 	}
-	get_rand();
+	random_word = get_rand(randobj);
 	for (j=0; j<10; j++) {
 	  if (*decoder_mlt_ptr == 0) {
 	    temp1 = noifillpos;
@@ -598,7 +563,7 @@ void decode_vector_quantized_mlt_indices(number_of_regions,
 
 /* This assumes region_size = 20 */
 	
-	get_rand();
+	random_word = get_rand(randobj);
 	for (j=0; j<10; j++) {
 	  if (*decoder_mlt_ptr == 0) {
 	    temp1 = noifillpos;
@@ -608,7 +573,7 @@ void decode_vector_quantized_mlt_indices(number_of_regions,
 	  }
 	  decoder_mlt_ptr++;
 	}
-	get_rand();
+	random_word = get_rand(randobj);
 	for (j=0; j<10; j++) {
 	  if (*decoder_mlt_ptr == 0) {
 	    temp1 = noifillpos;
@@ -629,14 +594,14 @@ void decode_vector_quantized_mlt_indices(number_of_regions,
 
 /* This assumes region_size = 20 */
 	
-	get_rand();
+	random_word = get_rand(randobj);
 	for (j=0; j<10; j++) {
 	  temp1 = noifillpos;
 	  if ((random_word & 1) == 0) temp1 = noifillneg;
 	  *decoder_mlt_ptr++ = temp1*NOISE_SCALE_FACTOR;
 	  random_word >>= 1;
 	}
-	get_rand();
+	random_word = get_rand(randobj);
 	for (j=0; j<10; j++) {
 	  temp1 = noifillpos;
 	  if ((random_word & 1) == 0) temp1 = noifillneg;
@@ -648,6 +613,47 @@ void decode_vector_quantized_mlt_indices(number_of_regions,
   }
 
   if (ran_out_of_bits_flag)
-    number_of_bits_left = -1;
+      bitobj->number_of_bits_left = -1;
 
+}
+
+/***************************************************************************
+ Function:  get_next_bit
+
+***************************************************************************/
+
+void get_next_bit(Bit_Obj *bitobj)
+{
+    short temp;
+
+    if (bitobj->code_bit_count == 0)
+    {
+        bitobj->current_word = *bitobj->code_word_ptr++;
+        bitobj->code_bit_count = 16;
+    }
+    bitobj->code_bit_count--;
+    temp = bitobj->current_word >> bitobj->code_bit_count;
+    bitobj->next_bit = (short)(temp & 1);
+}
+
+
+/***************************************************************************
+ Function:    get_rand
+
+***************************************************************************/
+
+int get_rand(Rand_Obj *randobj)
+{
+    int random_word; /* int decoder uses short */
+
+    random_word = (randobj->seed0 + randobj->seed3);
+    if ((random_word & 32768L) != 0)
+        random_word++;
+
+    randobj->seed3 = randobj->seed2;
+    randobj->seed2 = randobj->seed1;
+    randobj->seed1 = randobj->seed0;
+    randobj->seed0 = random_word;
+
+    return(random_word);
 }

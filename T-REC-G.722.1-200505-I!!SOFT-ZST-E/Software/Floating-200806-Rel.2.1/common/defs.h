@@ -54,3 +54,25 @@
 
 
 
+/***************************************************************************/
+/* Type definitions                                                        */
+/***************************************************************************/
+typedef struct
+{
+    short code_bit_count;      /* bit count of the current word */
+    short current_word;        /* current word in the bitstream being processed */
+    short *code_word_ptr;      /* pointer to the bitstream */
+    short number_of_bits_left; /* number of bits left in the current word */
+    short next_bit;            /* next bit in the current word */
+}Bit_Obj;
+
+typedef struct
+{
+    int seed0;
+    int seed1;
+    int seed2;
+    int seed3;
+}Rand_Obj;
+
+void get_next_bit(Bit_Obj *bitobj);
+int get_rand(Rand_Obj *randobj);

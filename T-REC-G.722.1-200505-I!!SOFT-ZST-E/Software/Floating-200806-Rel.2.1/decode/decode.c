@@ -32,7 +32,7 @@ int read_ITU_format(short int [], int *, int, FILE *);
  Extern function declarations                                             
 *************************************************************************************/
 extern void mlt_based_coder_init();
-extern void decoder(int, int, short int [], float [], int); 
+extern void decoder(Bit_Obj*, Rand_Obj*, int, int, float [], int);
 extern void rmlt_coefs_to_samples(float *, float *, int);
 
 /***************************************************************************
@@ -68,6 +68,8 @@ void main(argc, argv)
   int bandwidth=7;
   int syntax;
   int frame_error_flag=0;
+  Bit_Obj bitobj;
+  Rand_Obj randobj;
 
   /* parse the command line input */
   if (argc < 5) {
@@ -126,6 +128,12 @@ void main(argc, argv)
 
   mlt_based_coder_init();
 
+  /* initialize the random number generator */
+  randobj.seed0 = 1;
+  randobj.seed1 = 1;
+  randobj.seed2 = 1;
+  randobj.seed3 = 1;
+
 /* Read first frame of samples from disk. */
  
     if (syntax == 0)
@@ -141,9 +149,14 @@ void main(argc, argv)
  
   while(nsamp1 == framesize) {
 	 
-    decoder(number_of_regions,
+    /* reinit the current word to point to the start of the buffer */
+    bitobj.code_word_ptr = out_words;
+    bitobj.current_word =  *out_words;
+    bitobj.code_bit_count = 0;
+    bitobj.number_of_bits_left = number_of_bits_per_frame;
+
+    decoder(&bitobj, &randobj, number_of_regions,
 						number_of_bits_per_frame,
-						out_words,
 						decoder_mlt_coefs,
 						frame_error_flag);
 
