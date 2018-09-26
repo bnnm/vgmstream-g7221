@@ -32,8 +32,8 @@ int read_ITU_format(short int [], int *, int, FILE *);
  Extern function declarations                                             
 *************************************************************************************/
 extern void mlt_based_coder_init();
-extern void decoder(Bit_Obj*, Rand_Obj*, int, int, float [], int);
-extern void rmlt_coefs_to_samples(float *, float *, int);
+extern void decoder(Bit_Obj*, Rand_Obj*, int, float [], float [], int);
+extern void rmlt_coefs_to_samples(float *, float *, float *, int);
 
 /***************************************************************************
  Procedure/Function:     G722.1 main decoder function 
@@ -58,6 +58,8 @@ void main(argc, argv)
   int number_of_regions;
   short int output[MAX_DCT_SIZE];
   float decoder_mlt_coefs[MAX_DCT_SIZE];
+  float old_decoder_mlt_coefs[MAX_DCT_SIZE];
+  float float_old_samples[MAX_DCT_SIZE];
   float float_out_samples[MAX_DCT_SIZE];
   int sample_rate;
   int bit_rate;
@@ -65,15 +67,15 @@ void main(argc, argv)
   int number_of_16bit_words_per_frame;
   short int out_words[MAX_BITS_PER_FRAME/16];
   int framesize;
-  int bandwidth=7;
+  int bandwidth;
   int syntax;
   int frame_error_flag=0;
   Bit_Obj bitobj;
   Rand_Obj randobj;
 
   /* parse the command line input */
-  if (argc < 5) {
-    printf("Usage: decode 0(packed)/1 input-audio-file output-bitstream-file bit-rate\n");
+  if (argc < 6) {
+    printf("Usage: decode 0(packed)/1 input-audio-file output-bitstream-file bit-rate bandwidth\n");
     exit(1);
   }
 
@@ -97,6 +99,7 @@ void main(argc, argv)
   printf ("FLOATING POINT DECODE...\n");
 
   bit_rate = atoi(*++argv);
+  bandwidth = atoi(*++argv);
 
   if ((bit_rate < 8000) || (bit_rate > 48000) ||
       ((bit_rate/800)*800 != bit_rate)) {
@@ -105,17 +108,31 @@ void main(argc, argv)
   }
   
  /* initializes bandwidth and sampling rate parameters */
-  
-   number_of_regions = 14;
+  if (bandwidth == 7000) {
+      number_of_regions = NUM_REGIONS;
 
-   sample_rate = 16000;
+      sample_rate = 16000;
 
-   framesize = sample_rate/50;
-  
-   number_of_bits_per_frame = bit_rate/50;
+      framesize = sample_rate/50;
+
+      number_of_bits_per_frame = bit_rate/50;
+  }
+  else if (bandwidth == 14000) {
+      number_of_regions = MAX_NUM_REGIONS;
+
+      sample_rate = 32000;
+
+      framesize = sample_rate/50;
+
+      number_of_bits_per_frame = bit_rate/50;
+  }
+  else {
+    printf("codec: Error. bandwidth must be 7000 or 14000\n");
+    exit(1);
+  }
 
   printf("decoder\n");
-  printf("bandwidth = %d khz\n",bandwidth);
+  printf("bandwidth = %d hz\n",bandwidth);
   printf("syntax = %d ",syntax);
   if (syntax == 0) printf(" packed bitstream\n");
   else if (syntax == 1) printf(" ITU selection test bitstream\n");
@@ -156,11 +173,11 @@ void main(argc, argv)
     bitobj.number_of_bits_left = number_of_bits_per_frame;
 
     decoder(&bitobj, &randobj, number_of_regions,
-						number_of_bits_per_frame,
 						decoder_mlt_coefs,
+						old_decoder_mlt_coefs,
 						frame_error_flag);
 
-	rmlt_coefs_to_samples(decoder_mlt_coefs, float_out_samples, framesize);
+	rmlt_coefs_to_samples(decoder_mlt_coefs, float_old_samples, float_out_samples, framesize);
 
 	{
 	  float ftemp0;

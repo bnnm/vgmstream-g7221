@@ -48,8 +48,6 @@ void decode_envelope(Bit_Obj*, int, float[], int[]);
 void decode_vector_quantized_mlt_indices(Bit_Obj*, Rand_Obj*, int, float [], int [], float []);
 
 
-#define NOISE_SCALE_FACTOR 22.0F
-
 /***************************************************************************
  Procedure/Function:  decoder
 
@@ -75,22 +73,21 @@ void decode_vector_quantized_mlt_indices(Bit_Obj*, Rand_Obj*, int, float [], int
  Description:  
 				
 ***************************************************************************/
+extern void categorize(int, int, int[], int[], int[]);
 
 void decoder(bitobj,randobj,number_of_regions,
-	     number_of_bits_per_frame,
 	     decoder_mlt_coefs,
+	     old_decoder_mlt_coefs,
 	     frame_error_flag)
      Bit_Obj *bitobj;
      Rand_Obj *randobj;
      int number_of_regions;
-     int number_of_bits_per_frame;
      float decoder_mlt_coefs[MAX_DCT_SIZE];
+     float old_decoder_mlt_coefs[MAX_DCT_SIZE];
      int frame_error_flag;
 
 {
 
-  extern void categorize(int, int, int[], int[], int[]);
-  static float old_decoder_mlt_coefs[MAX_DCT_SIZE];
   int absolute_region_power_index[MAX_NUM_REGIONS];
   int decoder_power_categories[MAX_NUM_REGIONS];
   int decoder_category_balances[MAX_NUM_RATE_CONTROL_POSSIBILITIES-1];
@@ -104,17 +101,20 @@ void decoder(bitobj,randobj,number_of_regions,
 
   number_of_valid_coefs = number_of_regions * region_size;
 
-  if (number_of_regions <= 14)
-    number_of_coefs = 320;
-
-  if (frame_error_flag == 0) {
-
-    if (number_of_regions <= 14) {
+  if (number_of_regions==NUM_REGIONS) {
       num_rate_control_bits = 4;
       num_rate_control_possibilities = 16;
+      number_of_coefs = DCT_SIZE;
+  }
+  else {
+      num_rate_control_bits = 5;
+      num_rate_control_possibilities = 32;
+      number_of_coefs = MAX_DCT_SIZE;
+  }
 
 
-    }
+
+  if (frame_error_flag == 0) {
 
     decode_envelope(bitobj,number_of_regions,
 		    decoder_region_standard_deviation,
@@ -413,6 +413,22 @@ void decode_vector_quantized_mlt_indices(bitobj,randobj,number_of_regions,
   int *decoder_table_ptr;
 
   int random_word;
+  float scale_factor;
+  float noise_scale_factor;
+
+  /*
+  ** This was changed to for fixed point interop
+  ** A scale factor of 22.0 is used to adjust the decoded mlt value.
+  */
+  if (number_of_regions == NUM_REGIONS) {
+      scale_factor = 22.0f;
+      noise_scale_factor = 22.0f;
+  }
+  else {
+      scale_factor = 33.0f;
+      noise_scale_factor = 33.0f;
+  }
+
 
   ran_out_of_bits_flag = 0;
   for (region=0; region<number_of_regions; region++) {
@@ -463,11 +479,7 @@ void decode_vector_quantized_mlt_indices(bitobj,randobj,number_of_regions,
 	    }
 	    for (j=0; j<vec_dim; j++) {
 
-		  /*
-		  ** This was changed to for fixed point interop
-		  ** A scale factor of 22.0 is used to adjust the decoded mlt value. 
-		  */
-	      decoder_mlt_value = standard_deviation * mlt_quant_centroid[category][k[j]]*22.0f;
+	      decoder_mlt_value = standard_deviation * mlt_quant_centroid[category][k[j]]*scale_factor;
 
 	      if (decoder_mlt_value != 0) {
 		if ( (signs_index & bit) == 0)
@@ -526,7 +538,7 @@ void decode_vector_quantized_mlt_indices(bitobj,randobj,number_of_regions,
 	  if (*decoder_mlt_ptr == 0) {
 	    temp1 = noifillpos;
 	    if ((random_word & 1) == 0) temp1 = noifillneg;
-	    *decoder_mlt_ptr = temp1*NOISE_SCALE_FACTOR;
+	    *decoder_mlt_ptr = temp1*noise_scale_factor;
 	    random_word >>= 1;
 	  }
 	  decoder_mlt_ptr++;
@@ -536,7 +548,7 @@ void decode_vector_quantized_mlt_indices(bitobj,randobj,number_of_regions,
 	  if (*decoder_mlt_ptr == 0) {
 	    temp1 = noifillpos;
 	    if ((random_word & 1) == 0) temp1 = noifillneg;
-	    *decoder_mlt_ptr = temp1*NOISE_SCALE_FACTOR;
+	    *decoder_mlt_ptr = temp1*noise_scale_factor;
 	    random_word >>= 1;
 	  }
 	  decoder_mlt_ptr++;
@@ -568,7 +580,7 @@ void decode_vector_quantized_mlt_indices(bitobj,randobj,number_of_regions,
 	  if (*decoder_mlt_ptr == 0) {
 	    temp1 = noifillpos;
 	    if ((random_word & 1) == 0) temp1 = noifillneg;
-	    *decoder_mlt_ptr = temp1*NOISE_SCALE_FACTOR;
+	    *decoder_mlt_ptr = temp1*noise_scale_factor;
 	    random_word >>= 1;
 	  }
 	  decoder_mlt_ptr++;
@@ -578,7 +590,7 @@ void decode_vector_quantized_mlt_indices(bitobj,randobj,number_of_regions,
 	  if (*decoder_mlt_ptr == 0) {
 	    temp1 = noifillpos;
 	    if ((random_word & 1) == 0) temp1 = noifillneg;
-	    *decoder_mlt_ptr = temp1*NOISE_SCALE_FACTOR ;
+	    *decoder_mlt_ptr = temp1*noise_scale_factor ;
 	    random_word >>= 1;
 	  }
 	  decoder_mlt_ptr++;
@@ -598,14 +610,14 @@ void decode_vector_quantized_mlt_indices(bitobj,randobj,number_of_regions,
 	for (j=0; j<10; j++) {
 	  temp1 = noifillpos;
 	  if ((random_word & 1) == 0) temp1 = noifillneg;
-	  *decoder_mlt_ptr++ = temp1*NOISE_SCALE_FACTOR;
+	  *decoder_mlt_ptr++ = temp1*noise_scale_factor;
 	  random_word >>= 1;
 	}
 	random_word = get_rand(randobj);
 	for (j=0; j<10; j++) {
 	  temp1 = noifillpos;
 	  if ((random_word & 1) == 0) temp1 = noifillneg;
-	  *decoder_mlt_ptr++ = temp1*NOISE_SCALE_FACTOR;
+	  *decoder_mlt_ptr++ = temp1*noise_scale_factor;
 	  random_word >>= 1;
 	}
       }

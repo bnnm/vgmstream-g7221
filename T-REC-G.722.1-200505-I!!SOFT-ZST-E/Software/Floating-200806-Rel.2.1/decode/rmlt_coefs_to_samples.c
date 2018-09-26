@@ -54,18 +54,18 @@
  Description:    Converts the mlt_coefs to samples
 				
 ***************************************************************************/
+extern void dct_type_iv(float *, float *, long);
+static float window[MAX_DCT_SIZE];
 
 void rmlt_coefs_to_samples(coefs,
+               old_samples,
 			   out_samples,
 			   dct_size)
   float *coefs;
+  float *old_samples;
   float *out_samples;
   int dct_size;
 {
-  extern void dct_type_iv(float *, float *, long);
-
-   static float	old_samples[MAX_DCT_SIZE>>1];
-   static float	window[MAX_DCT_SIZE];
    static int	here_before = 0;
    float sum;
    

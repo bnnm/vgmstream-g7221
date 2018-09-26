@@ -17,6 +17,7 @@
 #define  PI  3.141592653589793238462
 
 #define MAX_DCT_SIZE 640
+#define DCT_SIZE 320
 
 #define MAX(a,b) (a > b ? a : b)
 #define MIN(a,b) (a < b ? a : b)

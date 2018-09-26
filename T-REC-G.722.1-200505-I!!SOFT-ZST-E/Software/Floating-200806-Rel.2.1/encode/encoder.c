@@ -107,6 +107,10 @@ void encoder(number_of_regions,
     num_rate_control_bits = 4;
     num_rate_control_possibilities = 16;
   }
+  else {
+    num_rate_control_bits = 5;
+    num_rate_control_possibilities = 32;
+  }
 
 
 

@@ -193,21 +193,24 @@ int category;
   int test_offset;
 
   int num_rate_control_possibilities;
-
-  if (number_of_regions <= 14)
-    num_rate_control_possibilities = 16;
+  int frame_size;
 
 
 /* At higher bit rates, there is an increase for most categories in average bit
    consumption per region. We compensate for this by pretending we have fewer
    available bits. 
 */
+  if (number_of_regions == NUM_REGIONS) {
+      num_rate_control_possibilities = 16;
+      frame_size = 320;
+  }
+  else {
+      num_rate_control_possibilities = 32;
+      frame_size = 640;
+  }
 
-  if (number_of_regions <= 14) 
-  {
-    if (number_of_available_bits > 320)
-      number_of_available_bits =
-	320 + (((number_of_available_bits - 320)*5) >> 3);
+  if (number_of_available_bits > frame_size) {
+      number_of_available_bits = frame_size + (((number_of_available_bits - frame_size)*5) >> 3);
   }
 
   offset = -32;
