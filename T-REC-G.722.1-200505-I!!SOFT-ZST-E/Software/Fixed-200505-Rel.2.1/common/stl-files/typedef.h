@@ -47,6 +47,8 @@ typedef int Flag;
 typedef unsigned int UWord16;
 #elif SHRT_MAX == 32767
 typedef unsigned short UWord16;
+#else
+typedef unsigned short UWord16;
 #endif
 
 /* define 32 bit unsigned types for G.722.1 */
@@ -54,6 +56,8 @@ typedef unsigned short UWord16;
 typedef unsigned int UWord32;
 #elif LONG_MAX == 2147483647L
 typedef unsigned long UWord32;
+#else
+typedef unsigned int UWord32;
 #endif
 
 #endif /* TYPEDEF_H */
