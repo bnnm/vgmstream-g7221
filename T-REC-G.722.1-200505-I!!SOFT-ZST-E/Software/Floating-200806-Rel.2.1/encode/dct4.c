@@ -162,6 +162,16 @@ void dct_type_iv (input, output, dct_length)
     here_before = 1;
   }
 
+
+  if (dct_length == DCT_SIZE) {
+      dct_length_log = 6;
+      core_size = 10;
+  }
+  else {
+      dct_length_log = 7;
+      core_size = 10;
+  }
+#if 0
   dct_length_log=1;
   core_size=dct_length;
 
@@ -173,7 +183,7 @@ void dct_type_iv (input, output, dct_length)
 
   core_size <<= 1;
   dct_length_log--;
-
+#endif
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 /* Do the sum/difference butterflies, the first part of */
 /* converting one N-point transform into N/2 two-point  */

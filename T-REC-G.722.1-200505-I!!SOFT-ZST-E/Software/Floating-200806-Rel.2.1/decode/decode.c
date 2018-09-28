@@ -58,8 +58,8 @@ int main(argc, argv)
   int number_of_regions;
   short int output[MAX_DCT_SIZE];
   float decoder_mlt_coefs[MAX_DCT_SIZE];
-  float old_decoder_mlt_coefs[MAX_DCT_SIZE];
-  float float_old_samples[MAX_DCT_SIZE];
+  float old_decoder_mlt_coefs[MAX_DCT_SIZE] = {0};
+  float float_old_samples[MAX_DCT_SIZE] = {0};
   float float_out_samples[MAX_DCT_SIZE];
   int sample_rate;
   int bit_rate;
