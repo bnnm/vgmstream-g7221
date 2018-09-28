@@ -96,8 +96,6 @@ void rmlt_coefs_to_samples(coefs,
 	   window[index] = (float)sin(angle);
 
      }
-     for (index = 0;    index < half_dct_size;    index++)
-       old_samples[index] = 0.0;
      here_before = 1;
    }
    
