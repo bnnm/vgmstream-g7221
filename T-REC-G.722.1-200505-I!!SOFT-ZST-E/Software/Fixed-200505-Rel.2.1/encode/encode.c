@@ -88,7 +88,7 @@ void write_ITU_format(Word16 *out_words,
  Design Notes: 16kbit/sec is also supported for bandwidth of 7kHz
 
 *************************************************************************************/
-main(Word16 argc,char *argv[])
+int main(int argc,char *argv[])
 {
     Word16  samples;
     Word16  input[MAX_FRAMESIZE];

@@ -46,7 +46,7 @@ extern void rmlt_coefs_to_samples(float *, float *, float *, int);
 								
 ***************************************************************************/
 			   
-void main(argc, argv)
+int main(argc, argv)
      int argc;
      char *argv[];
 {
@@ -228,6 +228,7 @@ void main(argc, argv)
  
     fclose(fp_bitstream);
 
+    return 0;
 }
 
 

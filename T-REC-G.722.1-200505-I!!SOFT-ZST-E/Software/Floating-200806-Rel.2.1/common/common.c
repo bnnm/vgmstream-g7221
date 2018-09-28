@@ -251,7 +251,7 @@ int category;
     int temp_category_balances[2*MAX_NUM_RATE_CONTROL_POSSIBILITIES];
 
     int raw_max, raw_min;
-    int raw_max_index, raw_min_index;
+    int raw_max_index = 0, raw_min_index = 0;
     int max_rate_pointer, min_rate_pointer;
     int max, min;
     int itemp0;

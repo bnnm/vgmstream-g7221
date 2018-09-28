@@ -56,7 +56,7 @@ extern void samples_to_rmlt_coefs(float *, float *, int);
 
 *************************************************************************************/
 
-void main(argc, argv)
+int main(argc, argv)
      int argc;
      char *argv[];
 
@@ -185,6 +185,7 @@ void main(argc, argv)
 	  fclose(fpin);
 	  fclose(fp_bitstream);
 
+      return 0;
 }
 
 

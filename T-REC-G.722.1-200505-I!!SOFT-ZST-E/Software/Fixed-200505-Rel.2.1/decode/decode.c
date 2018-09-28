@@ -86,7 +86,7 @@ Word16 read_ITU_format(Word16 *, Word16 *, Word16, FILE *);
 				
 ************************************************************************************/
 
-int main(Word16 argc,char *argv[])
+int main(int argc,char *argv[])
 {
     
     Word16 i;

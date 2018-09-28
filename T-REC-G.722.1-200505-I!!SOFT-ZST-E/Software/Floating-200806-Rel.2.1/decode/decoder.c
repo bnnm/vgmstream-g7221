@@ -405,10 +405,9 @@ void decode_vector_quantized_mlt_indices(bitobj,randobj,number_of_regions,
   int k[MAX_VECTOR_DIMENSION];
   int vec_dim;
   int num_vecs;
-  int index,signs_index;
-  int bit;
+  int index,signs_index = 0;
+  int bit = 0;
   int num_sign_bits;
-  int num_bits;
   int ran_out_of_bits_flag;
   int *decoder_table_ptr;
 
@@ -444,8 +443,6 @@ void decode_vector_quantized_mlt_indices(bitobj,randobj,number_of_regions,
 	num_vecs = number_of_vectors[category];
 
 	for (n=0; n<num_vecs; n++) {
-	  num_bits = 0;
-
 	  index = 0;
 	  do {
 	    if (bitobj->number_of_bits_left <= 0) {
