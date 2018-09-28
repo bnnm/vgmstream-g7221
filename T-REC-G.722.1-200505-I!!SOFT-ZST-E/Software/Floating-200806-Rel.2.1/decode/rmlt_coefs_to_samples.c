@@ -55,7 +55,29 @@
 				
 ***************************************************************************/
 extern void dct_type_iv(float *, float *, long);
-static float window[MAX_DCT_SIZE];
+static float imlt_window_320[MAX_DCT_SIZE];
+static float imlt_window_640[MAX_DCT_SIZE];
+
+static void imlt_window_init_size(float *window, int dct_size) {
+    int index;
+    double angle;
+
+    for (index = 0;    index < dct_size;    index++) {
+      angle         = (PI/2.0) * ((double) index + 0.5) / (double)dct_size;
+
+/* This changed when ENCODER_SCALE_FACTOR changed from 20853.0 to 18318.0. */
+/*       window[index] = 2.20895 * sin(angle); */
+/*       window[index] = (2.20895 * 129.5704536) * sin(angle); */
+/*       window[index] = (2.20895 * 129.6) * sin(angle); */
+
+      window[index] = (float)sin(angle);
+    }
+}
+
+void imlt_window_init() {
+    imlt_window_init_size(imlt_window_320, DCT_SIZE);
+    imlt_window_init_size(imlt_window_640, MAX_DCT_SIZE);
+}
 
 void rmlt_coefs_to_samples(coefs,
                old_samples,
@@ -66,37 +88,27 @@ void rmlt_coefs_to_samples(coefs,
   float *out_samples;
   int dct_size;
 {
-   static int	here_before = 0;
    float sum;
    
-   int index, vals_left;
-   double angle;
+   int vals_left;
    float new_samples[MAX_DCT_SIZE];
    float *new_ptr, *old_ptr;
    float *win_new, *win_old;
    float *out_ptr;
    int half_dct_size;
+   float* window;
 
 
    half_dct_size = dct_size>>1;
 
-   /*++++++++++++++++++++++++++++++++++++++*/
-   /* Set up some data the first time here */
-   /*++++++++++++++++++++++++++++++++++++++*/
-   
-   if (here_before == 0) {
-     for (index = 0;    index < dct_size;    index++) {
-       angle         = (PI/2.0) * ((double) index + 0.5) / (double)dct_size;
-
-/* This changed when ENCODER_SCALE_FACTOR changed from 20853.0 to 18318.0. */
-/*       window[index] = 2.20895 * sin(angle); */
-/*       window[index] = (2.20895 * 129.5704536) * sin(angle); */
-/*       window[index] = (2.20895 * 129.6) * sin(angle); */
-       
-	   window[index] = (float)sin(angle);
-
-     }
-     here_before = 1;
+   /*++++++++++++++++++*/
+   /* Set up some data */
+   /*++++++++++++++++++*/
+   if (dct_size == DCT_SIZE) {
+       window = imlt_window_320;
+   }
+   else {
+       window = imlt_window_640;
    }
    
    /*+++++++++++++++++++++++++++++++++++++++++++++++++++++*/

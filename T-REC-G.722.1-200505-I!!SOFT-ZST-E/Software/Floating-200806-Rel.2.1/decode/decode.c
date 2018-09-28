@@ -32,6 +32,8 @@ int read_ITU_format(short int [], int *, int, FILE *);
  Extern function declarations                                             
 *************************************************************************************/
 extern void mlt_based_coder_init();
+extern void imlt_window_init();
+extern void dct4_init();
 extern void decoder(Bit_Obj*, Rand_Obj*, int, float [], float [], int);
 extern void rmlt_coefs_to_samples(float *, float *, float *, int);
 
@@ -144,6 +146,8 @@ int main(argc, argv)
   number_of_16bit_words_per_frame = number_of_bits_per_frame/16;
 
   mlt_based_coder_init();
+  imlt_window_init();
+  dct4_init();
 
   /* initialize the random number generator */
   randobj.seed0 = 1;

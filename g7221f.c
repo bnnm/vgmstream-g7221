@@ -33,6 +33,8 @@
  Extern function declarations
 *************************************************************************************/
 extern void mlt_based_coder_init();
+extern void imlt_window_init();
+extern void dct4_init();
 extern void decoder(Bit_Obj*, Rand_Obj*, int, float [], float [], int);
 extern void rmlt_coefs_to_samples(float *, float *, float *, int);
 
@@ -164,8 +166,12 @@ g7221_handle * g7221_init(int bytes_per_frame, int bandwidth) {
         goto fail;
     }
 
-    /* initializes parameters */
+    /* initialize global tables */
+    /* only needs to be called once per program rather than every g7221_init,
+     * but should't matter or affect threads (as long as table = value assigns are atomic) */
     mlt_based_coder_init();
+    imlt_window_init();
+    dct4_init();
 
     g7221_reset(handle);
 

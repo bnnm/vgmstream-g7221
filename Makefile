@@ -5,8 +5,8 @@ CROSS_CC=gcc
 CROSS_STRIP=strip
 #CROSS_CC=i586-mingw32msvc-gcc
 #CROSS_STRIP=i586-mingw32msvc-strip
-CFLAGS = -fno-builtin -O2 -Wall
-#todo -O2/3 change some bytes
+CFLAGS = -fno-builtin -O3 -Wall
+# with -Ox there are minor (acceptable) byte differences on ouput due to float optimizations
 
 
 BASE_I=T-REC-G.722.1-200505-I!!SOFT-ZST-E/Software/Fixed-200505-Rel.2.1

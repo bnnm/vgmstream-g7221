@@ -36,7 +36,8 @@
 #include "defs.h"
 
 
-static float dct_core_a[100];
+static float dct_core_a_320[100];
+static float dct_core_a_640[100];
 typedef struct {
     float	cosine;
     float	minus_sine;
@@ -93,17 +94,11 @@ static void set_up_one_table (table, length)
  Description:  Set Up Tables of Cosine and Minus Sine Values	
                
 *********************************************************************************/
-static void set_up_tables(long dct_size)
+static void set_up_cos_msin_tables(int dct_size)
 {
   int length_log;
-  int i,k;
-  double scale;
+  int i;
 
-  scale = sqrt(2.0/dct_size);
-
-  if ( dct_size <= 0 )
-    
-	  printf("wrong dct size"), exit(1);
 
   length_log=0;
 
@@ -113,13 +108,27 @@ static void set_up_tables(long dct_size)
       dct_size >>= 1;
     }
 
-  for(k=0;k<10;++k) {
-    for(i=0;i<10;++i)
-      dct_core_a[10*k+i] = (float)( cos(PI*(k+0.5)*(i+0.5)/10.) * scale); 
-  }
 
   for (i = 0;    i<= length_log ;  i++)
     set_up_one_table (cos_msin_table[i], dct_size<<i);
+}
+
+static void set_up_dct_core_table(float * dct_core_a, int dct_size) {
+    int i,k;
+    double scale;
+
+    scale = sqrt(2.0/dct_size);
+
+    for(k=0;k<10;++k) {
+      for(i=0;i<10;++i)
+          dct_core_a[10*k+i] = (float)( cos(PI*(k+0.5)*(i+0.5)/10.) * scale);
+    }
+}
+
+void dct4_init() {
+    set_up_cos_msin_tables(MAX_DCT_SIZE);
+    set_up_dct_core_table(dct_core_a_320, DCT_SIZE);
+    set_up_dct_core_table(dct_core_a_640, MAX_DCT_SIZE);
 }
 
 
@@ -138,7 +147,7 @@ void dct_type_iv (input, output, dct_length)
      float	input[], output[];
      long	dct_length;
 {
-  static int	here_before = 0;
+  float* dct_core_a;
   float		buffer_a[MAX_DCT_SIZE], buffer_b[MAX_DCT_SIZE], buffer_c[MAX_DCT_SIZE];
   float		*in_ptr, *in_ptr_low, *in_ptr_high, *next_in_base;
   float		*out_ptr_low, *out_ptr_high, *next_out_base;
@@ -153,23 +162,16 @@ void dct_type_iv (input, output, dct_length)
   int dct_length_log;
   int core_size;
 
-/*++++++++++++++++++++++++++++++++++++++++++++++++++*/
-/* Set up the tables if this is the first time here */
-/*++++++++++++++++++++++++++++++++++++++++++++++++++*/
-
-  if (here_before == 0) {
-    set_up_tables(dct_length);
-    here_before = 1;
-  }
-
 
   if (dct_length == DCT_SIZE) {
       dct_length_log = 6;
       core_size = 10;
+      dct_core_a = dct_core_a_320;
   }
   else {
       dct_length_log = 7;
       core_size = 10;
+      dct_core_a = dct_core_a_640;
   }
 #if 0
   dct_length_log=1;

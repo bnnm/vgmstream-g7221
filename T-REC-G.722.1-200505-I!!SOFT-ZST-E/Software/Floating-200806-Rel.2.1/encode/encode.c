@@ -39,6 +39,8 @@ void write_ITU_format(short int [], int, int, FILE *);
  Extern function declarations                                             
 *************************************************************************************/
 extern void mlt_based_coder_init();
+//extern void imlt_window_init_enc();
+extern void dct4_init();
 extern void encoder(int, int, float [], short int []); 
 extern void samples_to_rmlt_coefs(float *, float *, int);
 			   
@@ -134,6 +136,8 @@ int main(argc, argv)
   number_of_16bit_words_per_frame = number_of_bits_per_frame/16;
 
   mlt_based_coder_init();
+  //imlt_window_init_enc();
+  dct4_init();
 
   /* Read first frame of samples from disk. */
 
