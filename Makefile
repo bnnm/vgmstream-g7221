@@ -5,7 +5,8 @@ CROSS_CC=gcc
 CROSS_STRIP=strip
 #CROSS_CC=i586-mingw32msvc-gcc
 #CROSS_STRIP=i586-mingw32msvc-strip
-CFLAGS = -fno-builtin
+CFLAGS = -fno-builtin -O2 -Wall
+#todo -O2/3 change some bytes
 
 
 BASE_I=T-REC-G.722.1-200505-I!!SOFT-ZST-E/Software/Fixed-200505-Rel.2.1
@@ -60,5 +61,20 @@ encode_f:
 	${SRC_COM_F} ${SRC_ENC_F} ${BASE_F}/encode/encode.c \
 	-o encode_f
 
+libg7221_decode_i.dll:
+	${CROSS_CC} -shared -DG7221_EXPORT ${CFLAGS} ${INCLUDES_I} \
+	${SRC_COM_I} ${SRC_DEC_I} g7221i.c \
+	-Xlinker --output-def -Xlinker libg7221_decode_i.def \
+	-o libg7221_decode_i.dll
+	${CROSS_STRIP} libg7221_decode_i.dll
+
+libg7221_decode.dll:
+	${CROSS_CC} -shared -DG7221_EXPORT ${CFLAGS} ${INCLUDES_F} \
+	${SRC_COM_F} ${SRC_DEC_F} g7221f.c  \
+	-Xlinker --output-def -Xlinker libg7221_decode.def \
+	-o libg7221_decode.dll
+	${CROSS_STRIP} libg7221_decode.dll
+
+
 clean:
-	rm -f decode_i encode_i decode_f encode_f
+	rm -f decode_i encode_i decode_f encode_f libg7221_decode_i.dll libg7221_decode.dll
