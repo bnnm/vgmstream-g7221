@@ -62,14 +62,14 @@ encode_f:
 	-o encode_f
 
 libg7221_decode_i.dll:
-	${CROSS_CC} -shared -DG7221_EXPORT ${CFLAGS} ${INCLUDES_I} \
+	${CROSS_CC} -shared -DG7221_EXPORT -DG7221_COMPILE_LIB ${CFLAGS} ${INCLUDES_I} \
 	${SRC_COM_I} ${SRC_DEC_I} g7221i.c \
 	-Xlinker --output-def -Xlinker libg7221_decode_i.def \
 	-o libg7221_decode_i.dll
 	${CROSS_STRIP} libg7221_decode_i.dll
 
 libg7221_decode.dll:
-	${CROSS_CC} -shared -DG7221_EXPORT ${CFLAGS} ${INCLUDES_F} \
+	${CROSS_CC} -shared -DG7221_EXPORT -DG7221_COMPILE_LIB ${CFLAGS} ${INCLUDES_F} \
 	${SRC_COM_F} ${SRC_DEC_F} g7221f.c  \
 	-Xlinker --output-def -Xlinker libg7221_decode.def \
 	-o libg7221_decode.dll

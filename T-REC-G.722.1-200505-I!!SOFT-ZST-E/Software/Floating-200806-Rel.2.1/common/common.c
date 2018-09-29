@@ -104,9 +104,9 @@ int category;
 ****************************************************************************************/
  void mlt_based_coder_init()
 	 {
-  int i,j;
+  int i;
   int category;
-  int number_of_indices;
+
  
 /*  region_size = (BLOCK_SIZE * 0.875)/NUM_REGIONS; */
   
@@ -138,15 +138,20 @@ int category;
 	  max_bin_plus_one_inverse[category] = (int) ((32768./(max_bin[category]+1.0)) + 1.0);
 
 /* Test division for all indices. */
-
-    number_of_indices = 1;
-    for (j=0; j<vector_dimension[category]; j++)
-      number_of_indices *= (max_bin[category]+1);
-    for (j=0; j<number_of_indices; j++) {
-      if (j/(max_bin[category]+1) != ((j*max_bin_plus_one_inverse[category]) >> 15))
-	printf("max_bin_plus_one_inverse ERROR!! %1d: %5d %3d\n",category,max_bin_plus_one_inverse[category],j);
-    }
+#ifndef G7221_COMPILE_LIB
+	  {
+	      int j;
+	      int number_of_indices = 1;
+	      for (j=0; j<vector_dimension[category]; j++)
+	        number_of_indices *= (max_bin[category]+1);
+	      for (j=0; j<number_of_indices; j++) {
+	        if (j/(max_bin[category]+1) != ((j*max_bin_plus_one_inverse[category]) >> 15))
+	      printf("max_bin_plus_one_inverse ERROR!! %1d: %5d %3d\n",category,max_bin_plus_one_inverse[category],j);
+	      }
+	  }
+#endif
   }
+
 
   for (category=0; category<NUM_CATEGORIES; category++)
     step_size_inverse_table[category] = (float) 1.0/step_size[category];

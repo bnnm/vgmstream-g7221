@@ -2099,13 +2099,21 @@ Word16 div_s (Word16 var1, Word16 var2)
 
     if ((var1 > var2) || (var1 < 0) || (var2 < 0))
     {
+#ifdef G7221_COMPILE_LIB
+        return 0;
+#else
         printf ("Division Error var1=%d  var2=%d\n", var1, var2);
         abort(); /* exit (0); */
+#endif
     }
     if (var2 == 0)
     {
+#ifdef G7221_COMPILE_LIB
+        return 0;
+#else
         printf ("Division by 0, Fatal error \n");
         abort(); /* exit (0); */
+#endif
     }
     if (var1 == 0)
     {
@@ -2339,13 +2347,21 @@ Word16 div_l (Word32  L_num, Word16 den)
 #endif
 
     if ( den == (Word16) 0 ) {
+#ifdef G7221_COMPILE_LIB
+        return 0;
+#else
         printf("Division by 0 in div_l, Fatal error \n");
         exit(0);
+#endif
     }
 
     if ( (L_num < (Word32) 0) || (den < (Word16) 0) ) {
+#ifdef G7221_COMPILE_LIB
+        return 0;
+#else
         printf("Division Error in div_l, Fatal error \n");
         exit(0);
+#endif
     }
 
     L_den = L_deposit_h( den ) ;
