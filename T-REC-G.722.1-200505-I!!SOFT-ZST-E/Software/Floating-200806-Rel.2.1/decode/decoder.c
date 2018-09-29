@@ -32,15 +32,15 @@
 #include "huff_defs.h"
 
 /* decalaration of external functions and variables */
-extern float mlt_quant_centroid[NUM_CATEGORIES-1][MAX_NUM_BINS];
+extern const float mlt_quant_centroid[NUM_CATEGORIES-1][MAX_NUM_BINS];
 extern float region_standard_deviation_table[REGION_POWER_TABLE_SIZE];
 extern int index_to_array(int, int[], int);
 
 extern int region_size;
-extern int differential_region_power_decoder_tree[MAX_NUM_REGIONS][DIFF_REGION_POWER_LEVELS-1][2];
-extern int vector_dimension[NUM_CATEGORIES];
-extern int number_of_vectors[NUM_CATEGORIES];
-extern int table_of_decoder_tables[NUM_CATEGORIES-1];
+extern const int differential_region_power_decoder_tree[MAX_NUM_REGIONS][DIFF_REGION_POWER_LEVELS-1][2];
+extern const int vector_dimension[NUM_CATEGORIES];
+extern const int number_of_vectors[NUM_CATEGORIES];
+extern const int table_of_decoder_tables[NUM_CATEGORIES-1];
 
 /* decalaration of local functions and variables */
 void rate_adjust_categories(int, int [], int []);
@@ -386,13 +386,13 @@ void decode_vector_quantized_mlt_indices(bitobj,randobj,number_of_regions,
   float noifillpos;
   float noifillneg;
 
-  static float noise_fill_factor_cat5[20] = {0.70711, 0.6179, 0.5005, 0.3220,
+  static const float noise_fill_factor_cat5[20] = {0.70711, 0.6179, 0.5005, 0.3220,
 					       0.17678, 0.17678, 0.17678, 0.17678,
 					       0.17678, 0.17678, 0.17678, 0.17678,
 					       0.17678, 0.17678, 0.17678, 0.17678,
 					       0.17678, 0.17678, 0.17678, 0.17678};
 
-  static float noise_fill_factor_cat6[20] = {0.70711, 0.5686, 0.3563, 0.25,
+  static const float noise_fill_factor_cat6[20] = {0.70711, 0.5686, 0.3563, 0.25,
 					       0.25, 0.25, 0.25, 0.25,
 					       0.25, 0.25, 0.25, 0.25,
 					       0.25, 0.25, 0.25, 0.25,

@@ -32,15 +32,15 @@ float step_size_inverse_table[NUM_CATEGORIES];
 float region_power_table[REGION_POWER_TABLE_SIZE];
 float region_power_table_boundary[REGION_POWER_TABLE_SIZE-1];
 
-int vector_dimension[NUM_CATEGORIES] =  { 2, 2, 2, 4, 4, 5, 5, 1};
-int number_of_vectors[NUM_CATEGORIES] = {10,10,10, 5, 5, 4, 4,20};
+const int vector_dimension[NUM_CATEGORIES] =  { 2, 2, 2, 4, 4, 5, 5, 1};
+const int number_of_vectors[NUM_CATEGORIES] = {10,10,10, 5, 5, 4, 4,20};
 
 /* The last category isn't really coded with scalar quantization. */
 
-float step_size[NUM_CATEGORIES] = {0.3536, 0.5, 0.7071, 1.0, 1.4142, 2.0, 2.8284, 2.8284};
-int max_bin[NUM_CATEGORIES] = {13, 9, 6, 4, 3, 2, 1, 1};
+const float step_size[NUM_CATEGORIES] = {0.3536, 0.5, 0.7071, 1.0, 1.4142, 2.0, 2.8284, 2.8284};
+const int max_bin[NUM_CATEGORIES] = {13, 9, 6, 4, 3, 2, 1, 1};
 int int_dead_zone[NUM_CATEGORIES];
-float dead_zone[NUM_CATEGORIES] = {0.3, 0.33, 0.36, 0.39, 0.42, 0.45, 0.5, 0.5};
+const float dead_zone[NUM_CATEGORIES] = {0.3, 0.33, 0.36, 0.39, 0.42, 0.45, 0.5, 0.5};
 static int max_bin_plus_one_inverse[NUM_CATEGORIES];
 
 /****************************************************************************************

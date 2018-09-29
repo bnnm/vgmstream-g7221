@@ -23,9 +23,9 @@
 #include <stdlib.h>
 #include "defs.h"
 
-static int one = 0x0081;
-static int zero = 0x007f;
-static int frame_start = 0x6b21;
+static const int one = 0x0081;
+static const int zero = 0x007f;
+static const int frame_start = 0x6b21;
 int read_ITU_format(short int [], int *, int, FILE *);
 
 /************************************************************************************

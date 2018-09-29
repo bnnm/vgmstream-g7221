@@ -55,7 +55,8 @@
 				
 ***************************************************************************/
 extern void dct_type_iv(float *, float *, long);
-static float imlt_window_320[MAX_DCT_SIZE];
+
+static float imlt_window_320[DCT_SIZE];
 static float imlt_window_640[MAX_DCT_SIZE];
 
 static void imlt_window_init_size(float *window, int dct_size) {
